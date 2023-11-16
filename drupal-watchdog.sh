@@ -5,17 +5,28 @@
 # Format based on https://docs.acquia.com/cloud-platform/monitor/logs/drupal-watchdog/
 
 # Get the directory that the script is in, no matter where it has been called from.
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 LOG_FILE=$1
 
-DATE=$(date "+%Y-%m-%d")
+DATE=$(date "+%Y-%m-%d_%H-%M")
 
-OUTPUT_FILE="${SCRIPT_DIR}//log-analysis-drupal-watchdog-${DATE}.csv"
+OUTPUT_FILE="${SCRIPT_DIR}/log-analysis-drupal-watchdog-${DATE}.csv"
 
-echo "Time,Timestamp,Type,IP address,Location,Referer,User ID,Message," > ${OUTPUT_FILE}
+echo "Date/Time,Timestamp,Type,IP address,Location,Referer,User ID,Message," >${OUTPUT_FILE}
 
-# Remove lines without timestamps | remove server info | remove request ID  | Output to CSV.
-cat "${LOG_FILE}" | grep dxp01 | sed 's/ drupal-.*dxp/\|dxp/' | sed 's/request_id=.*//' | awk -F "|" '{ print $1","$3","$4","$5","$6","$7","$8",\""$10"\"" }' >> ${OUTPUT_FILE}
+# Remove lines without dates at the start
+# Remove server info
+# Replace double quotes with single quotes 
+# Remove request ID prefix
+# Only keep relevant parts, split by |.
+# Output to CSV.
+cat "${LOG_FILE}" | 
+  grep "^[a-zA-Z][a-zA-Z][a-zA-Z] " |
+  sed -e 's/ \(drupal-.*: \)/\|\1/' \
+    -e "s/\"/'/g" \
+    -e 's/request_id=//' |
+  awk -F "|" '{ print $1","$3","$4","$5","$6","$7","$8",\""$10"\"" }' \
+    >>${OUTPUT_FILE}
 
 echo "Log entries exported to ${OUTPUT_FILE}"
