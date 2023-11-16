@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Parse an apache-error log file downloaded from Acquia Cloud into CSV for easier analysis.
+# Parse an apache-error log file into CSV for easier analysis.
 # usage log-analysis-apache-error.sh /path/to/logfile.txt
 # Format based on https://docs.acquia.com/cloud-platform/monitor/logs/apache-error/
 
